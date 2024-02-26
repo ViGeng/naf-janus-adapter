@@ -216,8 +216,8 @@ For GCP, you need to open 443 TCP and the rtp port range 51610-65535 UDP for Ing
 
 For Scaleway, you need to open 443 TCP and have a stateful security group for the rtp port range to work.
 
-Add a DNS A record preprod.example.com to your public ip.
-Of course modify preprod.example.com by a subdomain you own and replace it by your subdomain in the instructions and config files.
+Add a DNS A record webxr.wgeng.site to your public ip.
+Of course modify webxr.wgeng.site by a subdomain you own and replace it by your subdomain in the instructions and config files.
 
 ## Verify janus is starting
 
@@ -425,7 +425,7 @@ Copy the dist folder in the examples folder so nginx can find it:
 
     cp -rf dist examples/
 
-modify the serverURL url in the html file `examples/index.html` with `wss://preprod.example.com/janus`
+modify the serverURL url in the html file `examples/index.html` with `wss://webxr.wgeng.site/janus`
 
 ## nginx configuration
 
@@ -435,7 +435,7 @@ Install nginx and certbot:
 
 Generate letsencrypt certificate first while you still have `/etc/nginx/sites-enabled/default`:
 
-    sudo certbot certonly --deploy-hook "nginx -s reload" --webroot -w /var/www/html -d xr.wgeng.site
+    sudo certbot certonly --deploy-hook "nginx -s reload" --webroot -w /var/www/html -d webxr.wgeng.site
 
 Create `/etc/nginx/sites-available/site`:
 
@@ -443,7 +443,7 @@ Create `/etc/nginx/sites-available/site`:
 server {
   listen      80 default_server;
   listen      [::]:80 default_server;
-  server_name xr.wgeng.site;
+  server_name webxr.wgeng.site;
   # allow letsencrypt
   location ~ /\.well-known {
     allow all;
@@ -458,7 +458,7 @@ server {
 server {
   listen      443 ssl http2;
   listen      [::]:443 ssl http2;
-  server_name xr.wgeng.site;
+  server_name webxr.wgeng.site;
   keepalive_timeout   70;
   location /janus {
     proxy_pass http://127.0.0.1:8188;
@@ -473,10 +473,10 @@ server {
   }
 
   # https://ssl-config.mozilla.org/#server=nginx&version=1.17.7&config=modern&openssl=1.1.1k&guideline=5.6
-  #ssl_certificate /etc/letsencrypt/live/preprod.example.com/fullchain.pem;
-  #ssl_certificate_key /etc/letsencrypt/live/preprod.example.com/privkey.pem;
-  ssl_certificate /home/rowan/source/naf-janus-adapter/xr.wgeng.site_nginx/xr.wgeng.site_bundle.pem;
-  ssl_certificate_key /home/rowan/source/naf-janus-adapter/xr.wgeng.site_nginx/xr.wgeng.site.key;
+  #ssl_certificate /etc/letsencrypt/live/webxr.wgeng.site/fullchain.pem;
+  #ssl_certificate_key /etc/letsencrypt/live/webxr.wgeng.site/privkey.pem;
+  ssl_certificate /home/rowan/source/naf-janus-adapter/webxr.wgeng.site_nginx/webxr.wgeng.site_bundle.pem;
+  ssl_certificate_key /home/rowan/source/naf-janus-adapter/webxr.wgeng.site_nginx/webxr.wgeng.site.key;
   ssl_session_timeout 1d;
   ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
   ssl_session_tickets off;
@@ -493,8 +493,8 @@ server {
   ssl_stapling_verify on;
 
   # verify chain of trust of OCSP response using Root CA and Intermediate certs
-  #ssl_trusted_certificate /etc/letsencrypt/live/preprod.example.com/chain.pem;
-  ssl_trusted_certificate /home/rowan/source/naf-janus-adapter/xr.wgeng.site_nginx/xr.wgeng.site_bundle.pem;
+  #ssl_trusted_certificate /etc/letsencrypt/live/webxr.wgeng.site/chain.pem;
+  ssl_trusted_certificate /home/rowan/source/naf-janus-adapter/webxr.wgeng.site_nginx/webxr.wgeng.site_bundle.pem;
   #resolver 8.8.8.8 8.8.4.4;
   resolver 192.168.1.1;
 }
@@ -513,18 +513,18 @@ Enable the new config:
     sudo systemctl stop nginx
 
 You can do a quick check of your nginx conf.
-If you go to https://preprod.example.com/janus and it shows the "403" number on the
+If you go to https://webxr.wgeng.site/janus and it shows the "403" number on the
 top left, it means the request reached janus, then the websocket part will probably be ok.
 If you get a 403 with an additional message, then you have an issue with your nginx conf.
 
-Go to https://preprod.example.com to access the example.
+Go to https://webxr.wgeng.site to access the example.
 
 ## Testing the example
 
 In browser logs you should see:
 
 ```
-connecting to wss://preprod.example.com/janus
+connecting to wss://webxr.wgeng.site/janus
 broadcastDataGuaranteed called without a publisher
 broadcastData called without a publisher
 pub waiting for sfu
