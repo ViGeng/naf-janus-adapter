@@ -435,7 +435,7 @@ Install nginx and certbot:
 
 Generate letsencrypt certificate first while you still have `/etc/nginx/sites-enabled/default`:
 
-    sudo certbot certonly --deploy-hook "nginx -s reload" --webroot -w /var/www/html -d preprod.example.com
+    sudo certbot certonly --deploy-hook "nginx -s reload" --webroot -w /var/www/html -d xr.wgeng.site
 
 Create `/etc/nginx/sites-available/site`:
 
@@ -443,7 +443,7 @@ Create `/etc/nginx/sites-available/site`:
 server {
   listen      80 default_server;
   listen      [::]:80 default_server;
-  server_name preprod.example.com;
+  server_name xr.wgeng.site;
   # allow letsencrypt
   location ~ /\.well-known {
     allow all;
@@ -458,7 +458,7 @@ server {
 server {
   listen      443 ssl http2;
   listen      [::]:443 ssl http2;
-  server_name preprod.example.com;
+  server_name xr.wgeng.site;
   keepalive_timeout   70;
   location /janus {
     proxy_pass http://127.0.0.1:8188;
@@ -469,12 +469,14 @@ server {
     proxy_cache_bypass $http_upgrade;
   }
   location / {
-    root /home/ubuntu/naf-janus-adapter/examples;
+    root /home/rowan/source/naf-janus-adapter/examples;
   }
 
   # https://ssl-config.mozilla.org/#server=nginx&version=1.17.7&config=modern&openssl=1.1.1k&guideline=5.6
-  ssl_certificate /etc/letsencrypt/live/preprod.example.com/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/preprod.example.com/privkey.pem;
+  #ssl_certificate /etc/letsencrypt/live/preprod.example.com/fullchain.pem;
+  #ssl_certificate_key /etc/letsencrypt/live/preprod.example.com/privkey.pem;
+  ssl_certificate /home/rowan/source/naf-janus-adapter/xr.wgeng.site_nginx/xr.wgeng.site_bundle.pem;
+  ssl_certificate_key /home/rowan/source/naf-janus-adapter/xr.wgeng.site_nginx/xr.wgeng.site.key;
   ssl_session_timeout 1d;
   ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
   ssl_session_tickets off;
@@ -491,8 +493,10 @@ server {
   ssl_stapling_verify on;
 
   # verify chain of trust of OCSP response using Root CA and Intermediate certs
-  ssl_trusted_certificate /etc/letsencrypt/live/preprod.example.com/chain.pem;
-  resolver 8.8.8.8 8.8.4.4;
+  #ssl_trusted_certificate /etc/letsencrypt/live/preprod.example.com/chain.pem;
+  ssl_trusted_certificate /home/rowan/source/naf-janus-adapter/xr.wgeng.site_nginx/xr.wgeng.site_bundle.pem;
+  #resolver 8.8.8.8 8.8.4.4;
+  resolver 192.168.1.1;
 }
 ```
 
@@ -500,10 +504,13 @@ In the nginx conf above, change the path /home/ubuntu/naf-janus-adapter/examples
 
 Enable the new config:
 
-    ln -s /etc/nginx/sites-available/site /etc/nginx/sites-enabled/site
-    rm /etc/nginx/sites-enabled/default
-    nginx -t
-    systemctl restart nginx
+    sudo ln -s /etc/nginx/sites-available/site /etc/nginx/sites-enabled/site
+    sudo rm /etc/nginx/sites-enabled/default
+    sudo nginx -t # check config syntax err
+    sudo systemctl restart nginx
+
+    # when you want to stop nginx running at the background
+    sudo systemctl stop nginx
 
 You can do a quick check of your nginx conf.
 If you go to https://preprod.example.com/janus and it shows the "403" number on the
